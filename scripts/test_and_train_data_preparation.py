@@ -163,14 +163,14 @@ def vcf2haplegend(vcf_file, output_prefix):
          writing(output_prefix + '.legend.gz') as fout_legend:
         for line in fin:
             if line.startswith('#CHROM'):
-                sample_list = line.rstrip().split()[9:]
+                sample_list = line.rstrip().split('\t')[9:]
                 break
         sample_size = len(sample_list)
         fout_legend.write('id position a0 a1\n')
         allele_id_list = [None] * (2 * sample_size)
         hap_record = [None] * (2 * sample_size)
         for line in fin:
-            items = line.rstrip().split()
+            items = line.rstrip().split('\t')
             chrom = items[0]
             position = items[1]
             snp = items[2]
@@ -230,10 +230,30 @@ def prepare_train_hap(
                 fout.write(line)
                 col_list.append(2 * i)
                 col_list.append(2 * i + 1)
-    shutil.copy(legend_file, output_prefix + '.legend.gz')
+    array_marker_flag_list = []
+    with reading(legend_file) as fin, \
+         writing(output_prefix + '.legend.gz') as fout:
+        line = fin.readline()
+        items = line.rstrip().split()
+        try:
+            array_marker_flag_col = items.index('array_marker_flag')
+        except ValueError:
+            print(
+                'Error: Header "array_marker_flag" not found in '
+                + legend_file, file=sys.stderr)
+            sys.exit(0)
+        fout.write(line)
+        for line in fin:
+            items = line.rstrip().split()
+            array_marker_flag = items[array_marker_flag_col] == '1'
+            array_marker_flag_list.append(array_marker_flag)
+            if array_marker_flag:
+                fout.write(line)
     with reading(hap_file) as fin, \
          writing(output_prefix + '.hap.gz') as fout:
-        for line in fin:
+        for i, line in enumerate(fin):
+            if not array_marker_flag_list[i]:
+                continue
             items = line.rstrip().split(' ')
             fout.write(' '.join([items[col] for col in col_list]))
             fout.write('\n')
@@ -257,10 +277,27 @@ def prepare_true_test_hap(
                 fout.write(line)
                 col_list.append(2 * i)
                 col_list.append(2 * i + 1)
+    array_marker_flag_list = []
+    with reading(legend_file) as fin:
+        line = fin.readline()
+        items = line.rstrip().split()
+        try:
+            array_marker_flag_col = items.index('array_marker_flag')
+        except ValueError:
+            print(
+                'Error: Header "array_marker_flag" not found in '
+                + legend_file, file=sys.stderr)
+            sys.exit(0)
+        for line in fin:
+            items = line.rstrip().split()
+            array_marker_flag = items[array_marker_flag_col] == '1'
+            array_marker_flag_list.append(array_marker_flag)
     a1_freq_list = []
     with reading(hap_file) as fin, \
          writing(output_prefix + '.hap.gz') as fout:
-        for line in fin:
+        for i, line in enumerate(fin):
+            if not array_marker_flag_list[i]:
+                continue
             items = line.rstrip().split(' ')
             a0_count = items.count('0')
             a1_count = items.count('1')
@@ -282,42 +319,19 @@ def prepare_true_test_hap(
         a1_freq_col = header_items.index('a1_freq')
         fout.write(' '.join(header_items))
         fout.write('\n')
+        count = 0
         for i, line in enumerate(fin):
+            if not array_marker_flag_list[i]:
+                continue
             items = line.rstrip().split(' ')
             if a1_freq_col == len(items):
-                items.append(a1_freq_list[i])
+                items.append(a1_freq_list[count])
             else:
-                items[a1_freq_col] = a1_freq_list[i]
+                items[a1_freq_col] = a1_freq_list[count]
             fout.write(' '.join(items))
             fout.write('\n')
-
-
-def prepare_test_hap(hap_file, legend_file, output_prefix):
-    array_marker_flag_list = []
-    with reading(legend_file) as fin, \
-         writing(output_prefix + '.legend.gz') as fout:
-        line = fin.readline()
-        items = line.rstrip().split()
-        try:
-            array_marker_flag_col = items.index('array_marker_flag')
-        except ValueError:
-            print_error()
-            print_error('Error: Header "array_marker_flag" not found in '
-                        + legend_file)
-            print_error()
-            sys.exit(0)
-        fout.write(line)
-        for line in fin:
-            items = line.rstrip().split()
-            array_marker_flag = items[array_marker_flag_col] == '1'
-            array_marker_flag_list.append(array_marker_flag)
-            if array_marker_flag:
-                fout.write(line)
-    with reading(hap_file) as fin, \
-         writing(output_prefix + '.hap.gz') as fout:
-        for i, line in enumerate(fin):
-            if array_marker_flag_list[i]:
-                fout.write(line)
+            count += 1
+        assert count == len(a1_freq_list)
 
 
 def main():
@@ -359,10 +373,6 @@ def main():
         all_hap_prefix + '.sample',
         test_sample_name_set,
         test_hap_prefix + '_true')
-    prepare_test_hap(
-        test_hap_prefix + '_true.hap.gz',
-        test_hap_prefix + '_true.legend.gz',
-        test_hap_prefix)
 
 
 if __name__ == '__main__':

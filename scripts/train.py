@@ -17,13 +17,13 @@ def main():
                         help='file for data file prefix list')
     parser.add_argument('--output-prefix', type=str, required=True,
                         dest='output_prefix', help='output prefix')
-    parser.add_argument('--model-type', type=str, default='SCDA',
+    parser.add_argument('--model-type', type=str, default='ResNet',
                         dest='model_type', help='model type')
-    parser.add_argument('--epochs', type=int, default=10,
+    parser.add_argument('--epochs', type=int, default=1000,
                         dest='epochs', help='number of epochs')
     parser.add_argument('--batch-size', type=int, default=32,
                         dest='batch_size', help='batch size')
-    parser.add_argument('--dropout-rate', type=float, default=0.25,
+    parser.add_argument('--dropout-rate', type=float, default=0,
                         dest='dropout_rate', help='dropout rate')
     parser.add_argument('--learning-rate', type=float, default=1.e-3,
                         dest='learning_rate', help='learning rate')

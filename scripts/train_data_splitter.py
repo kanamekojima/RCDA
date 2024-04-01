@@ -288,7 +288,7 @@ def main():
     region_info_list = get_region_info_list(
         legend_info_list, args.marker_count_limit, partition_position_list)
 
-    print('No. of splitted regions: {:d}'.format(len(region_info_list)))
+    print('No. of split regions: {:d}'.format(len(region_info_list)))
 
     hap_handler = HapHandler(args.output_prefix + '_mod.hap.gz')
     legend_lines = []

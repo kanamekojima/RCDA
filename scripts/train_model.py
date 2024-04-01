@@ -227,13 +227,13 @@ def main():
                         dest='legend_file', help='legend file')
     parser.add_argument('--output-prefix', type=str, required=True,
                         dest='output_prefix', help='output prefix')
-    parser.add_argument('--model-type', type=str, default='SCDA',
+    parser.add_argument('--model-type', type=str, default='ResNet',
                         dest='model_type', help='model type')
-    parser.add_argument('--epochs', type=int, default=10,
+    parser.add_argument('--epochs', type=int, default=1000,
                         dest='epochs', help='number of epochs')
     parser.add_argument('--batch-size', type=int, default=32,
                         dest='batch_size', help='batch size')
-    parser.add_argument('--dropout-rate', type=float, default=0.25,
+    parser.add_argument('--dropout-rate', type=float, default=0,
                         dest='dropout_rate', help='dropout rate')
     parser.add_argument('--learning-rate', type=float, default=1.e-3,
                         dest='learning_rate', help='learning rate')
@@ -255,7 +255,7 @@ def main():
                         dest='random_seed', help='random seed')
     args = parser.parse_args()
 
-    assert args.model_type in {'SCDA', 'ResNet', 'ResNetV2'}
+    assert args.model_type in {'ResNet', 'ResNetV2', 'SCDA'}
     start_time = time.time()
     mkdir(os.path.dirname(args.output_prefix))
     shutil.copy(args.legend_file, args.output_prefix + '.legend.gz')
@@ -276,16 +276,16 @@ def main():
     print(
         'Missing rate interval: {:.4f}-{:.4f}'.format(*missing_rate_interval))
 
-    if args.model_type == 'SCDA':
-        model = DL_models.get_SCDA_model(
-            inputs.shape[-1], right_margin=right_margin,
-            dropout_rate=args.dropout_rate)
-    elif args.model_type == 'ResNet':
+    if args.model_type == 'ResNet':
         model = DL_models.get_ResNet_model(
             inputs.shape[-1], right_margin=right_margin,
             dropout_rate=args.dropout_rate)
     elif args.model_type == 'ResNetV2':
         model = DL_models.get_ResNetV2_model(
+            inputs.shape[-1], right_margin=right_margin,
+            dropout_rate=args.dropout_rate)
+    elif args.model_type == 'SCDA':
+        model = DL_models.get_SCDA_model(
             inputs.shape[-1], right_margin=right_margin,
             dropout_rate=args.dropout_rate)
     else:
