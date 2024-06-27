@@ -132,7 +132,7 @@ python3 scripts/train.py \
 | --output-format STRING_VALUE | gen | Output format [gen / vcf] |
 | --python3-bin STRING_VALUE | python3 | Path to the Python3 binary |
 
-Options for `scripts/train.py`
+### Options for `scripts/train.py`
 
 | Option | Default Value | Summary |
 |:-------|:-------------:|:-------|
@@ -154,6 +154,15 @@ Options for `scripts/train.py`
 
 The scripts in this repository are available under the MIT License.
 For more details, see the [LICENSE](LICENSE) file.
+
+## Citation
+
+If you find RNN-IMP or any of the scripts in this repository useful for your research, please cite:
+
+> Kojima, K., Tadaka, S., Okamura, Y. & Kinoshita, K. (2024).
+> Two-stage strategy using denoising autoencoders for robust reference-free genotype imputation with missing input genotypes.
+> *Journal of Human Genetics*.
+> https://doi.org/10.1038/s10038-024-01261-6
 
 ## Contact
 
